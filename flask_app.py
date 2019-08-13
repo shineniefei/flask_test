@@ -3,10 +3,12 @@
 
 import os
 import sys
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
+from conf.config import config_dict
 
-# add current_path to path first
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# add current_path to os path first
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
 def create_app(config=None):
@@ -15,6 +17,16 @@ def create_app(config=None):
         __name__,
         instance_relative_config=True,
     )
+    # config
+    if config is None:
+        app.config.from_object(config_dict['dev'])
+        # app.config.from_pyfile('dev.py')
+        app.logger.info('config is dev')
+    else:
+        app.config.from_object(config_dict[config])
+        # app.config.from_pyfile(config + '.py')
+
+    app.config.from_envvar('APP_CONFIG', silent=True)
 
     # root route
     @app.route('/', methods=['GET', 'POST'])
@@ -31,16 +43,21 @@ def create_app(config=None):
             back['postmsg'] = data
         else:
             data = request.values
-            print(data)
+            # data = request.args
             app.logger.info(f'index request method: GET, data: {data}')
             back['getmsg'] = data
         app.logger.info(f'index response data: {back}')
         return jsonify(back)
 
+    # favicon route
+    @app.route('/favicon.ico')
+    def favicon():
+        return Response('/static/img/favicon.ico', mimetype="image/ico")
+
     return app
 
 
-# When the module is directly run, the under code will be run
+# executing code in a module when it is run as a script or with python -m but not when it is imported
 if __name__ == '__main__':
     app = create_app()
     app.run(host='0.0.0.0', port=5001)
