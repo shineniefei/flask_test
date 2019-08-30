@@ -14,6 +14,9 @@ class RedisUtil():
         print(self.r.ping())
         return self.r
 
+    def use_handler(self):
+        self.r.select(1)
+
     def set_handler(self, key, value):
         self.r.set(key, value)
 
@@ -69,3 +72,4 @@ if __name__ == '__main__':
     r = RedisUtil.conn_redis()
     RedisUtil.set_handler('test', '123')
     print(RedisUtil.get_handler('test'))
+    RedisUtil.use_handler()
