@@ -3,8 +3,11 @@
 
 import os
 import sys
+
 from flask import Flask, jsonify, request
 from flask_spyne import Spyne
+
+from conf.config import config_dict
 
 # add current_path to path first
 # sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -23,6 +26,16 @@ def create_app(config=None):
         __name__,
         instance_relative_config=True,
     )
+    # config
+    if config is None:
+        app.config.from_object(config_dict['default'])
+        app.config.from_pyfile('default.py')
+        app.logger.info('config is default')
+    else:
+        app.config.from_object(config_dict[config])
+        app.config.from_pyfile(config + '.py')
+
+    app.config.from_envvar('APP_CONFIG', silent=True)
 
     spyne = Spyne(app)
 
