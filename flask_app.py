@@ -4,9 +4,17 @@
 import os
 import sys
 from flask import Flask, jsonify, request
+from flask_spyne import Spyne
 
 # add current_path to path first
+# sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+DEFAULT_BLUEPRINTS = (
+    ("flask_test.blue.blue_crm6", "crm6", "crm6"),
+    ("flask_test.blue.blue_web", "web", "web"),
+    ("flask_test.blue.blue_mock", "mock", "mock"),
+)
 
 
 def create_app(config=None):
@@ -15,6 +23,11 @@ def create_app(config=None):
         __name__,
         instance_relative_config=True,
     )
+
+    spyne = Spyne(app)
+
+    from blue_mock.views import mock
+    app.register_blueprint(mock, url_prefix='/mock')
 
     # root route
     @app.route('/', methods=['GET', 'POST'])
@@ -31,7 +44,6 @@ def create_app(config=None):
             back['postmsg'] = data
         else:
             data = request.values
-            print(data)
             app.logger.info(f'index request method: GET, data: {data}')
             back['getmsg'] = data
         app.logger.info(f'index response data: {back}')
