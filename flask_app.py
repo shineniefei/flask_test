@@ -9,6 +9,12 @@ from conf.config import config_dict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+DEFAULT_BLUEPRINTS = (
+    ("flask_test.blue.blue_crm6", "crm6", "crm6"),
+    ("flask_test.blue.blue_web", "web", "web"),
+    ("flask_test.blue.blue_mock", "mock", "mock"),
+)
+
 
 def create_app(config=None):
 
@@ -23,12 +29,19 @@ def create_app(config=None):
         app.logger.info('config is dev')
     else:
         app.config.from_object(config_dict[config])
-        # app.config.from_pyfile(config + '.py')
+        app.config.from_pyfile(config + '.py')
+        app.logger.info('config is ')
+    app.config.from_envvar('APP_CONFIG', silent=True)
+
+    spyne = Spyne(app)
+
+    from blue_mock.views import mock
+    app.register_blueprint(mock, url_prefix='/mock')
 
     app.config.from_envvar('APP_CONFIG', silent=True)
     print(app.config)
     app.logger.addHandler(app.config['LOGGING'])
-    
+
     # root route
     @app.route('/', methods=['GET', 'POST'])
     def index():
