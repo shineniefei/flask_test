@@ -5,7 +5,6 @@ import os
 import sys
 from flask import Flask, jsonify, request, Response
 from conf.config import config_dict
-
 # add current_path to os path first
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -27,7 +26,9 @@ def create_app(config=None):
         # app.config.from_pyfile(config + '.py')
 
     app.config.from_envvar('APP_CONFIG', silent=True)
-
+    print(app.config)
+    app.logger.addHandler(app.config['LOGGING'])
+    
     # root route
     @app.route('/', methods=['GET', 'POST'])
     def index():
